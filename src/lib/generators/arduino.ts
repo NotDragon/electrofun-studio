@@ -1,6 +1,6 @@
 import { profile, setUpProfile } from './arduino/profile';
 import * as Blockly from 'blockly';
-import { Arduino } from './arduino/util';
+import { Arduino, definitions, setups } from './arduino/util';
 
 setUpProfile(); // Initialize the default profile
 
@@ -14,23 +14,6 @@ Arduino.addReservedWords(
  *
  */
 
-Arduino.ORDER_ATOMIC = 0; // 0 "" ...
-Arduino.ORDER_UNARY_POSTFIX = 1; // expr++ expr-- () [] .
-Arduino.ORDER_UNARY_PREFIX = 2; // -expr !expr ~expr ++expr --expr
-Arduino.ORDER_MULTIPLICATIVE = 3; // * / % ~/
-Arduino.ORDER_ADDITIVE = 4; // + -
-Arduino.ORDER_SHIFT = 5; // << >>
-Arduino.ORDER_RELATIONAL = 6; // is is! >= > <= <
-Arduino.ORDER_EQUALITY = 7; // == != === !==
-Arduino.ORDER_BITWISE_AND = 8; // &
-Arduino.ORDER_BITWISE_XOR = 9; // ^
-Arduino.ORDER_BITWISE_OR = 10; // |
-Arduino.ORDER_LOGICAL_AND = 11; // &&
-Arduino.ORDER_LOGICAL_OR = 12; // ||
-Arduino.ORDER_CONDITIONAL = 13; // expr ? expr : expr
-Arduino.ORDER_ASSIGNMENT = 14; // = *= /= ~/= %= += -= <<= >>= &= ^= |=
-Arduino.ORDER_NONE = 99; // (...)
-
 /*
  * Arduino Board profiles
  *
@@ -40,9 +23,6 @@ Arduino.ORDER_NONE = 99; // (...)
 //alert(profile.default.digital[0]);
 
 Arduino.init = function (workspace) {
-	Arduino.definitions_ = Object.create(null);
-	Arduino.setups_ = Object.create(null);
-
 	if (!Arduino.nameDB_) {
 		Arduino.nameDB_ = new Blockly.Names(Arduino.RESERVED_WORDS_);
 	} else {
@@ -61,7 +41,7 @@ Arduino.init = function (workspace) {
 			(variables[i].type === 'String' ? ';\n' : ' = 0;\n');
 	}
 
-	Arduino.definitions_['variables'] = defvars.join('\n');
+	definitions['variables'] = defvars.join('\n');
 };
 
 /**
@@ -78,8 +58,8 @@ Arduino.finish = function (code) {
 	// Convert the definitions dictionary into a list.
 	let imports = [];
 	let definitions = [];
-	for (let name in Arduino.definitions_) {
-		let def = Arduino.definitions_[name];
+	for (let name in definitions) {
+		let def = definitions[name];
 		if (def.match(/^#include/)) {
 			imports.push(def);
 		} else {
@@ -89,8 +69,8 @@ Arduino.finish = function (code) {
 
 	// Convert the setups dictionary into a list.
 	let setups = [];
-	for (let name in Arduino.setups_) {
-		setups.push(Arduino.setups_[name]);
+	for (let name in setups) {
+		setups.push(setups[name]);
 	}
 
 	let allDefs =
