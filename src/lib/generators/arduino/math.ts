@@ -13,12 +13,12 @@ Arduino.forBlock['math_number'] = function (block) {
 
 Arduino.forBlock['math_arithmetic'] = function (block) {
 	// Basic arithmetic operators, and power.
-	var mode = block.getFieldValue('OP');
+	var mode = block.getFieldValue('OP') as keyof typeof math_arithmetic;
 	var tuple = math_arithmetic[mode];
-	var operator = tuple[0];
-	var order = tuple[1];
-	var argument0 = Arduino.valueToCode(Arduino, 'A', order) || '0';
-	var argument1 = Arduino.valueToCode(Arduino, 'B', order) || '0';
+	var operator = tuple[0] as string;
+	var order = tuple[1] as Order;
+	var argument0 = Arduino.valueToCode(block, 'A', order) || '0';
+	var argument1 = Arduino.valueToCode(block, 'B', order) || '0';
 	var code;
 	if (!operator) {
 		code = 'Math.pow(' + argument0 + ', ' + argument1 + ')';
