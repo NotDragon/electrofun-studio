@@ -1,12 +1,12 @@
 import * as Blockly from 'blockly';
 import { Arduino, Order } from './util';
 
-Arduino.forBlock['controls_for'] = function (block) {
+Arduino.forBlock['controls_for'] = (block) => {
 	// For loop.
 	let variable0 = Arduino.nameDB_?.getName(
 		block.getFieldValue('VAR'),
-		Blockly.Variables.VAR_LETTER_OPTIONS
-	);
+		Blockly.Variables.CATEGORY_NAME
+	) || '0';
 	let argument0 =
 	Arduino.valueToCode(block, 'FROM', Order.ASSIGNMENT) || '0';
 	let argument1 = Arduino.valueToCode(block, 'TO', Order.ASSIGNMENT) || '0';
@@ -19,7 +19,7 @@ Arduino.forBlock['controls_for'] = function (block) {
 		// Both arguments are simple numbers.
 		let up = parseFloat(argument0) <= parseFloat(argument1);
 		code =
-			'for (' +
+			'for(' +
 			variable0 +
 			' = ' +
 			argument0 +
@@ -53,7 +53,7 @@ Arduino.forBlock['controls_for'] = function (block) {
 			code += 'int ' + endlet + ' = ' + argument1 + ';\n';
 		}
 		code +=
-			'for (' +
+			'for(' +
 			variable0 +
 			' = ' +
 			startlet +
@@ -84,7 +84,7 @@ Arduino.forBlock['controls_for'] = function (block) {
 	return code;
 };
 
-Arduino.forBlock['controls_whileUntil'] = function (block) {
+Arduino.forBlock['controls_whileUntil'] = (block) => {
 	// Do while/until loop.
 	let until = block.getFieldValue('MODE') == 'UNTIL';
 	let argument0 =

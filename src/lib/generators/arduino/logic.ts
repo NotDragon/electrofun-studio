@@ -2,7 +2,7 @@ import { profile } from './profile';
 import * as Blockly from 'blockly';
 import { Arduino, Order } from './util';
 
-Arduino.forBlock['controls_if'] = function (block) {
+Arduino.forBlock['controls_if'] = (block) => {
 	// If/elseif/else condition.
 	let n = 0;
 	let argument = Arduino.valueToCode(block, 'IF' + n, Order.NONE) || 'false';
@@ -22,9 +22,9 @@ Arduino.forBlock['controls_if'] = function (block) {
 	return code + '\n';
 };
 
-Arduino.forBlock['logic_compare'] = function (block) {
+Arduino.forBlock['logic_compare'] = (block) => {
 	// Comparison operator.
-	let mode = block.getFieldValue('OP');
+	let mode = block.getFieldValue('OP') as keyof typeof logic_compare;
 	let operator = logic_compare[mode];
 	let order =
 		operator == '==' || operator == '!='
@@ -45,7 +45,7 @@ const logic_compare = {
 	GTE: '>='
 };
 
-Arduino.forBlock['logic_operation'] = function (block) {
+Arduino.forBlock['logic_operation'] = (block) => {
 	// Operations 'and', 'or'.
 	let operator = block.getFieldValue('OP') == 'AND' ? '&&' : '||';
 	let order = operator == '&&' ? Order.LOGICAL_AND : Order.LOGICAL_OR;
@@ -55,7 +55,7 @@ Arduino.forBlock['logic_operation'] = function (block) {
 	return [code, order];
 };
 
-Arduino.forBlock['logic_negate'] = function (block) {
+Arduino.forBlock['logic_negate'] = (block) => {
 	// Negation.
 	let order = Order.UNARY_PREFIX;
 	let argument0 = Arduino.valueToCode(block, 'BOOL', order) || 'false';
@@ -63,13 +63,13 @@ Arduino.forBlock['logic_negate'] = function (block) {
 	return [code, order];
 };
 
-Arduino.forBlock['logic_boolean'] = function (block) {
+Arduino.forBlock['logic_boolean'] = (block) => {
 	// Boolean values true and false.
 	let code = block.getFieldValue('BOOL') == 'TRUE' ? 'true' : 'false';
 	return [code, Order.ATOMIC];
 };
 
-Arduino.forBlock['logic_null'] = function () {
+Arduino.forBlock['logic_null'] = () => {
 	let code = 'NULL';
 	return [code, Order.ATOMIC];
 };

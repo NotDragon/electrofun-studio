@@ -1,29 +1,32 @@
 import { profile } from './profile';
 import * as Blockly from 'blockly';
-import { Arduino } from './util';
+import { Arduino, Order, definitions } from './util';
 
-Arduino.forBlock['procedures_defreturn'] = function () {
+Arduino.forBlock['procedures_defreturn'] = (block) => {
 	// Define a procedure with a return value.
-	let funcName = Arduino.nameDB_.getName(
-		Arduino.getFieldValue('NAME'),
-		Blockly.Procedures.NAME_TYPE
-	);
-	let branch = Arduino.statementToCode(Arduino, 'STACK');
+	let funcName = Arduino.nameDB_?.getName(
+		block.getFieldValue('NAME'),
+		Blockly.Procedures.CATEGORY_NAME
+	) || '';
+
+	let branch = Arduino.statementToCode(block, 'STACK');
 	if (Arduino.INFINITE_LOOP_TRAP) {
-		branch = Arduino.INFINITE_LOOP_TRAP.replace(/%1/g, "'" + Arduino.id + "'") + branch;
+		branch = Arduino.INFINITE_LOOP_TRAP.replace(/%1/g, "'" + block.id + "'") + branch;
 	}
-	let returnValue =
-		Arduino.valueToCode(Arduino, 'RETURN', Arduino.ORDER_NONE) || '';
+
+	let returnValue = Arduino.valueToCode(block, 'RETURN', Order.NONE) || '';
+
 	if (returnValue) {
 		returnValue = '  return ' + returnValue + ';\n';
 	}
+
 	let returnType = returnValue ? 'int' : 'void';
 	let args = [];
-	for (let x = 0; x < Arduino.arguments_.length; x++) {
-		args[x] =
-			'int ' +
-			Arduino.nameDB_.getName(Arduino.arguments_[x], Blockly.Variables.NAME_TYPE);
+
+	for (let x of block.getFields()) {
+		args.push(`int ${Arduino.nameDB_?.getName(x.name ?? '', Blockly.Variables.CATEGORY_NAME)}`);
 	}
+
 	let code =
 		returnType +
 		' ' +
@@ -34,53 +37,57 @@ Arduino.forBlock['procedures_defreturn'] = function () {
 		branch +
 		returnValue +
 		'}\n';
-	code = Arduino.scrub_(Arduino, code);
-	Arduino.definitions_[funcName] = code;
+	code = Arduino.scrub_(block, code);
+	definitions[funcName] = code;
+
 	return null;
 };
 
-// Defining a procedure without a return value uses the same generator as
-// a procedure with a return value.
-Arduino.procedures_defnoreturn = Arduino.procedures_defreturn;
-
-Arduino.forBlock['procedures_callreturn'] = function () {
+Arduino.forBlock['procedures_callreturn'] = (block) => {
 	// Call a procedure with a return value.
-	let funcName = Arduino.nameDB_.getName(
-		Arduino.getFieldValue('NAME'),
-		Blockly.Procedures.NAME_TYPE
+	let funcName = Arduino.nameDB_?.getName(
+		block.getFieldValue('NAME'),
+		Blockly.Procedures.CATEGORY_NAME
 	);
+
 	let args = [];
-	for (let x = 0; x < Arduino.arguments_.length; x++) {
-		args[x] =
-			Arduino.valueToCode(Arduino, 'ARG' + x, Arduino.ORDER_NONE) || 'null';
+	let counter = 0;
+	for (let _ of block.getFields()) {
+		counter++;
+		args[counter] =
+			Arduino.valueToCode(block, 'ARG' + counter, Order.NONE) || 'null';
 	}
 	let code = funcName + '(' + args.join(', ') + ')';
-	return [code, Arduino.ORDER_UNARY_POSTFIX];
+
+	return [code, Order.UNARY_POSTFIX];
 };
 
-Arduino.forBlock['procedures_callnoreturn'] = function () {
+Arduino.forBlock['procedures_callnoreturn'] = (block) => {
 	// Call a procedure with no return value.
-	let funcName = Arduino.nameDB_.getName(
-		Arduino.getFieldValue('NAME'),
-		Blockly.Procedures.NAME_TYPE
+	let funcName = Arduino.nameDB_?.getName(
+		block.getFieldValue('NAME'),
+		Blockly.Procedures.CATEGORY_NAME
 	);
+
 	let args = [];
-	for (let x = 0; x < Arduino.arguments_.length; x++) {
-		args[x] =
-			Arduino.valueToCode(Arduino, 'ARG' + x, Arduino.ORDER_NONE) || 'null';
+	let counter = 0;
+	for (let _ of block.getFields()) {
+		counter++;
+		args[counter] =
+			Arduino.valueToCode(block, 'ARG' + counter, Order.NONE) || 'null';
 	}
 	let code = funcName + '(' + args.join(', ') + ');\n';
 	return code;
 };
 
-Arduino.forBlock['procedures_ifreturn'] = function () {
+Arduino.forBlock['procedures_ifreturn'] = (block) => {
 	// Conditionally return value from a procedure.
 	let condition =
-		Arduino.valueToCode(Arduino, 'CONDITION', Arduino.ORDER_NONE) || 'false';
+		Arduino.valueToCode(block, 'CONDITION', Order.NONE) || 'false';
 	let code = 'if (' + condition + ') {\n';
-	if (Arduino.hasReturnValue_) {
+	if (true) {
 		let value =
-			Arduino.valueToCode(Arduino, 'VALUE', Arduino.ORDER_NONE) || 'null';
+			Arduino.valueToCode(block, 'VALUE', Order.NONE) || 'null';
 		code += '  return ' + value + ';\n';
 	} else {
 		code += '  return;\n';

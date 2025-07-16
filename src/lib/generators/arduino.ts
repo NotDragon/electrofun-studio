@@ -1,126 +1,81 @@
-import { profile, setUpProfile } from './arduino/profile';
+import { setUpProfile } from './arduino/profile';
 import * as Blockly from 'blockly';
-import { Arduino, definitions, setups } from './arduino/util';
+import { Arduino, definitions, reset, setups } from './arduino/util';
 
 setUpProfile(); // Initialize the default profile
 
+const reservedKeywords = 'setup,loop,if,else,for,switch,case,while,do,break,continue,return,goto,define,include,HIGH,LOW,INPUT,OUTPUT,INPUT_PULLUP,true,false,interger, constants,floating,point,void,bookean,char,unsigned,byte,int,word,long,float,double,string,String,array,static, volatile,const,sizeof,pinMode,digitalWrite,digitalRead,analogReference,analogRead,analogWrite,tone,noTone,shiftOut,shitIn,pulseIn,millis,micros,delay,delayMicroseconds,min,max,abs,constrain,map,pow,sqrt,sin,cos,tan,randomSeed,random,lowByte,highByte,bitRead,bitWrite,bitSet,bitClear,bit,attachInterrupt,detachInterrupt,interrupts,noInterrupts';
+
 Arduino.addReservedWords(
 	// http://arduino.cc/en/Reference/HomePage
-	'setup,loop,if,else,for,switch,case,while,do,break,continue,return,goto,define,include,HIGH,LOW,INPUT,OUTPUT,INPUT_PULLUP,true,false,interger, constants,floating,point,void,bookean,char,unsigned,byte,int,word,long,float,double,string,String,array,static, volatile,const,sizeof,pinMode,digitalWrite,digitalRead,analogReference,analogRead,analogWrite,tone,noTone,shiftOut,shitIn,pulseIn,millis,micros,delay,delayMicroseconds,min,max,abs,constrain,map,pow,sqrt,sin,cos,tan,randomSeed,random,lowByte,highByte,bitRead,bitWrite,bitSet,bitClear,bit,attachInterrupt,detachInterrupt,interrupts,noInterrupts'
+	reservedKeywords
 );
 
-/**
- * Order of operation ENUMs.
- *
- */
-
-/*
- * Arduino Board profiles
- *
- */
-//set default profile to arduino standard-compatible board
-
-//alert(profile.default.digital[0]);
-
-Arduino.init = function (workspace) {
+Arduino.init = (workspace) => {
+	reset();
 	if (!Arduino.nameDB_) {
-		Arduino.nameDB_ = new Blockly.Names(Arduino.RESERVED_WORDS_);
+		Arduino.nameDB_ = new Blockly.Names(reservedKeywords);
 	} else {
 		Arduino.nameDB_.reset();
 	}
+	Arduino.nameDB_.setVariableMap(workspace.getVariableMap());
 
-	let defvars = [];
-	let variables = workspace.getAllVariables();
-
+	let defvars = new Set<string>();
+	let variables = workspace.getVariableMap().getAllVariables();
 	for (let i = 0; i < variables.length; i++) {
-		variables[i].type = 'int'; // variables[i].name.startsWith("str:")? 'String': variables[i].name.startsWith("float:")? 'float': 'int';
-		defvars[i] =
-			(variables[i].type || 'int') +
+		variables[i].setType('int'); // variables[i].name.startsWith("str:")? 'String': variables[i].name.startsWith("float:")? 'float': 'int';
+		defvars.add(
+			(variables[i].getType() || 'int') +
 			' ' +
-			Arduino.nameDB_.getName(variables[i].id, Blockly.Variables.VAR_LETTER_OPTIONS) +
-			(variables[i].type === 'String' ? ';\n' : ' = 0;\n');
+			Arduino.nameDB_.getName(variables[i].getName(), Blockly.Variables.CATEGORY_NAME) +
+			(variables[i].getType() === 'String' ? ';\n' : ' = 0;\n'));
 	}
 
-	definitions['variables'] = defvars.join('\n');
+	let vars: string[] = [];
+	defvars.forEach(e => vars.push(e));
+
+	definitions['variables'] = vars.join('\n');
 };
 
-/**
- * Prepend the generated code with the variable definitions.
- * @param {string} code Generated code.
- * @return {string} Completed code.
- */
-Arduino.finish = function (code) {
+
+Arduino.finish = (code) => {
 	// Indent every line.
 	code = '  ' + code.replace(/\n/g, '\n  ');
 	code = code.replace(/\n\s+$/, '\n');
-	code = 'void loop() \n{\n' + code + '\n}';
+	if(!code.includes('void loop()'))
+		code = 'void loop() {\n' + code + '\n}';
 
 	// Convert the definitions dictionary into a list.
 	let imports = [];
-	let definitions = [];
+	let extracted_definitions = [];
 	for (let name in definitions) {
 		let def = definitions[name];
 		if (def.match(/^#include/)) {
 			imports.push(def);
 		} else {
-			definitions.push(def);
+			extracted_definitions.push(def);
 		}
 	}
 
 	// Convert the setups dictionary into a list.
-	let setups = [];
+	let extracted_setups = [];
 	for (let name in setups) {
-		setups.push(setups[name]);
+		extracted_setups.push(setups[name]);
 	}
 
-	let allDefs =
-		imports.join('\n') +
-		'\n\n' +
-		definitions.join('\n') +
-		'\nvoid setup() \n{\n  ' +
-		setups.join('\n  ') +
-		'\n}' +
-		'\n\n';
+	let allDefs = '';
+	if(!code.includes('void setup()'))
+		allDefs = `${imports.join('\n')}\n\n${extracted_definitions.join('\n')}\nvoid setup() {\n ${extracted_setups.join('\n  ')} \n}\n\n`;
 
 	return allDefs.replace(/\n\n+/g, '\n\n').replace(/\n*$/, '\n\n\n') + code;
 };
 
-/**
- * Naked values are top-level blocks with outputs that aren't plugged into
- * anything.  A trailing semicolon is needed to make this legal.
- * @param {string} line Line of generated code.
- * @return {string} Legal line of code.
- */
-Arduino.scrubNakedValue = function (line) {
+Arduino.scrubNakedValue = (line) => {
 	return line + ';\n';
 };
 
-/**
- * Encode a string as a properly escaped Arduino string, complete with quotes.
- * @param {string} string Text to encode.
- * @return {string} Arduino string.
- * @private
- */
-Arduino.quote_ = function (string) {
-	// TODO: This is a quick hack.  Replace with goog.string.quote
-	string = string
-		.replace(/\\/g, '\\\\')
-		.replace(/\n/g, '\\\n')
-		.replace(/\$/g, '\\$')
-		.replace(/'/g, "\\'");
-	return '\"' + string + '\"';
-};
 
-/**
- * Common tasks for generating Arduino from blocks.
- * Handles comments for the specified block and any connected value blocks.
- * Calls any statements following this block.
- * @param {!Blockly.Block} block The current block.
- * @param {string} code The Arduino code created for this block.
- * @return {string} Arduino code with comments and subsequent blocks added.
- * @private
- */
-Arduino.scrub_ = function (block, code) {
+Arduino.scrub_ = (block, code) => {
 	if (code === null) {
 		// Block has handled code generation itself.
 		return '';

@@ -1,28 +1,28 @@
 import { profile } from './profile';
 import { Arduino, Order, definitions, setups } from './util';
 
-Arduino.forBlock['base_delay'] = function (block) {
+Arduino.forBlock['base_delay'] = (block) => {
 	let delay_time =
 		Arduino.valueToCode(block, 'DELAY_TIME', Order.ATOMIC) || '1000';
 	let code = 'delay(' + delay_time + ');\n';
 	return code;
 };
 
-Arduino.forBlock['base_map'] = function (block) {
+Arduino.forBlock['base_map'] = (block) => {
 	let value_num = Arduino.valueToCode(block, 'NUM', Order.NONE);
 	let value_dmax = Arduino.valueToCode(block, 'DMAX', Order.ATOMIC);
 	let code = 'map(' + value_num + ', 0, 1024, 0, ' + value_dmax + ')';
 	return [code, Order.NONE];
 };
 
-Arduino.forBlock['inout_buildin_led'] = function (block) {
+Arduino.forBlock['inout_buildin_led'] = (block) => {
 	let dropdown_stat = block.getFieldValue('STAT');
 	setups['setup_output_13'] = 'pinMode(13, OUTPUT);';
 	let code = 'digitalWrite(13, ' + dropdown_stat + ');\n';
 	return code;
 };
 
-Arduino.forBlock['inout_digital_write'] = function (block) {
+Arduino.forBlock['inout_digital_write'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	let dropdown_stat = block.getFieldValue('STAT');
 	setups['setup_output_' + dropdown_pin] = 'pinMode(' + dropdown_pin + ', OUTPUT);';
@@ -30,14 +30,14 @@ Arduino.forBlock['inout_digital_write'] = function (block) {
 	return code;
 };
 
-Arduino.forBlock['inout_digital_read'] = function (block) {
+Arduino.forBlock['inout_digital_read'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	setups['setup_input_' + dropdown_pin] = 'pinMode(' + dropdown_pin + ', INPUT);';
 	let code = 'digitalRead(' + dropdown_pin + ')';
 	return [code, Order.ATOMIC];
 };
 
-Arduino.forBlock['inout_analog_write'] = function (block) {
+Arduino.forBlock['inout_analog_write'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	//let dropdown_stat = Arduino.getFieldValue('STAT');
 	let value_num = Arduino.valueToCode(block, 'NUM', Order.ATOMIC);
@@ -46,14 +46,14 @@ Arduino.forBlock['inout_analog_write'] = function (block) {
 	return code;
 };
 
-Arduino.forBlock['inout_analog_read'] = function (block) {
+Arduino.forBlock['inout_analog_read'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	//setups['setup_input_'+dropdown_pin] = 'pinMode('+dropdown_pin+', INPUT);';
 	let code = 'analogRead(' + dropdown_pin + ')';
 	return [code, Order.ATOMIC];
 };
 
-Arduino.forBlock['inout_tone'] = function (block) {
+Arduino.forBlock['inout_tone'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	let value_num = Arduino.valueToCode(block, 'NUM', Order.ATOMIC);
 	setups['setup_output' + dropdown_pin] = 'pinMode(' + dropdown_pin + ', OUTPUT);';
@@ -61,14 +61,14 @@ Arduino.forBlock['inout_tone'] = function (block) {
 	return code;
 };
 
-Arduino.forBlock['inout_notone'] = function (block) {
+Arduino.forBlock['inout_notone'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	setups['setup_output' + dropdown_pin] = 'pinMode(' + dropdown_pin + ', OUTPUT);';
 	let code = 'noTone(' + dropdown_pin + ');\n';
 	return code;
 };
 
-Arduino.forBlock['inout_highlow'] = function (block) {
+Arduino.forBlock['inout_highlow'] = (block) => {
 	// Boolean values HIGH and LOW.
 	let code = block.getFieldValue('BOOL') == 'HIGH' ? 'HIGH' : 'LOW';
 	return [code, Order.ATOMIC];
@@ -90,7 +90,7 @@ servo_11.write(0);
 servo_11.write(150); //0~180
 }
 */
-Arduino.forBlock['servo_move'] = function (block) {
+Arduino.forBlock['servo_move'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 	let value_degree = Arduino.valueToCode(block, 'DEGREE', Order.ATOMIC);
 
@@ -103,7 +103,7 @@ Arduino.forBlock['servo_move'] = function (block) {
 	return code;
 };
 
-Arduino.forBlock['servo_read_degrees'] = function (block) {
+Arduino.forBlock['servo_read_degrees'] = (block) => {
 	let dropdown_pin = block.getFieldValue('PIN');
 
 	definitions['define_servo'] = '#include <Servo.h>\n';
@@ -115,7 +115,7 @@ Arduino.forBlock['servo_read_degrees'] = function (block) {
 	return code;
 };
 
-Arduino.forBlock['serial_print'] = function (block) {
+Arduino.forBlock['serial_print'] = (block) => {
 	let content = Arduino.valueToCode(block, 'CONTENT', Order.ATOMIC) || '0';
 	//content = content.replace('(','').replace(')','');
 

@@ -23,3 +23,8 @@ export enum Order {
 
 export let definitions: { [key: string]: string } = {};
 export let setups: { [key: string]: string } = {};
+
+export const reset = () => {
+    definitions = {};
+    setups = {};
+}

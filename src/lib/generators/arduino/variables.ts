@@ -1,29 +1,29 @@
 import { profile } from './profile';
 import * as Blockly from 'blockly';
-import { Arduino } from './util';
+import { Arduino, Order, setups } from './util';
 
-Arduino.forBlock['variables_get'] = function () {
+Arduino.forBlock['variables_get'] = (block) => {
 	// Variable getter.
-	let code = Arduino.nameDB_.getName(
-		Arduino.getFieldValue('VAR'),
-		Blockly.Variables.NAME_TYPE
-	);
+	let code = Arduino.nameDB_?.getName(
+		block.getFieldValue('VAR'),
+		Blockly.Variables.CATEGORY_NAME
+	) || '';
 
-	return [code, Arduino.ORDER_ATOMIC];
+	return [code, Order.ATOMIC];
 };
 
-Arduino.forBlock['variables_declare'] = function (workspace) {
+Arduino.forBlock['variables_declare'] = (block) => {
 	// Variable setter.
-	let dropdown_type = Arduino.getFieldValue('TYPE');
+	let dropdown_type = block.getFieldValue('TYPE');
 
 	let argument0 =
-		Arduino.valueToCode(Arduino, 'VALUE', Arduino.ORDER_ASSIGNMENT) ||
+		Arduino.valueToCode(block, 'VALUE', Order.ASSIGNMENT) ||
 		(dropdown_type === 'words' ? '""' : 0);
 
-	let varName = Arduino.nameDB_.getName(
-		Arduino.getFieldValue('VAR'),
-		Blockly.Variables.NAME_TYPE
-	);
+	let varName = Arduino.nameDB_?.getName(
+		block.getFieldValue('VAR'),
+		Blockly.Variables.CATEGORY_NAME
+	) || '';
 
 	// for(let i of workspace.workspace.variableMap.variableMap){
 	// for(let j of i[1]){
@@ -34,18 +34,18 @@ Arduino.forBlock['variables_declare'] = function (workspace) {
 	// }
 	// }
 
-	Arduino.setups_['setup_var' + varName] = varName + ' = ' + argument0 + ';\n';
+	setups['setup_var' + varName] = varName + ' = ' + argument0 + ';\n';
 	return '';
 };
 
-Arduino.forBlock['variables_set'] = function (workspace) {
+Arduino.forBlock['variables_set'] = (block) => {
 	// Variable setter.
 	let argument0 =
-		Arduino.valueToCode(Arduino, 'VALUE', Arduino.ORDER_ASSIGNMENT) || '0';
+		Arduino.valueToCode(block, 'VALUE', Order.ASSIGNMENT) || '0';
 
-	let varName = Arduino.nameDB_.getName(
-		Arduino.getFieldValue('VAR'),
-		Blockly.Variables.NAME_TYPE
+	let varName = Arduino.nameDB_?.getName(
+		block.getFieldValue('VAR'),
+		Blockly.Variables.CATEGORY_NAME
 	);
 
 	return varName + ' = ' + argument0 + ';\n';

@@ -6,6 +6,7 @@
 	import { Arduino } from '$lib/generators/arduino.js';
     import { toolbox } from '$lib/toolbox';
     import { blocks } from '$lib/customBlocks';
+	import { lightTheme, darkTheme } from '$lib/blocklyThemes';
 
 	let workspaceDiv: HTMLDivElement;
 	let workspace: Blockly.WorkspaceSvg;
@@ -29,6 +30,7 @@
 				arduinoCode = Arduino.finish(rawCode);
 			}
 		});
+		workspace.setTheme(lightTheme);
 	});
 </script>
 
