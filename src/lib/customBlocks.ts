@@ -90,8 +90,10 @@ export const blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
 				type: 'field_dropdown',
 				name: 'TYPE',
 				options: [
-					['words', 'words'],
-					['numbers', 'numbers']
+					['words', 'String'],
+					['numbers', 'int'],
+					['decimals', 'float'],
+					['true/false', 'bool']
 				]
 			},
 			{

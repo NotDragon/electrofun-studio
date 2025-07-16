@@ -25,14 +25,7 @@ Arduino.forBlock['variables_declare'] = (block) => {
 		Blockly.Variables.CATEGORY_NAME
 	) || '';
 
-	// for(let i of workspace.workspace.variableMap.variableMap){
-	// for(let j of i[1]){
-	// 	if(j.id_ === Arduino.getFieldValue('VAR')){
-	// 		j.type = (dropdown_type === 'words'? 'String': 'int');
-	// 		break;
-	// 	}
-	// }
-	// }
+	block.workspace.getVariableMap().getVariableById(block.getFieldValue('VAR'))?.setType(dropdown_type);
 
 	setups['setup_var' + varName] = varName + ' = ' + argument0 + ';\n';
 	return '';

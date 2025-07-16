@@ -1,5 +1,6 @@
 import { setUpProfile } from './arduino/profile';
 import * as Blockly from 'blockly';
+
 import { Arduino, definitions, reset, setups } from './arduino/util';
 
 setUpProfile(); // Initialize the default profile
@@ -23,7 +24,6 @@ Arduino.init = (workspace) => {
 	let defvars = new Set<string>();
 	let variables = workspace.getVariableMap().getAllVariables();
 	for (let i = 0; i < variables.length; i++) {
-		variables[i].setType('int'); // variables[i].name.startsWith("str:")? 'String': variables[i].name.startsWith("float:")? 'float': 'int';
 		defvars.add(
 			(variables[i].getType() || 'int') +
 			' ' +
@@ -92,7 +92,7 @@ Arduino.scrub_ = (block, code) => {
 		// Don't collect comments for nested statements.
 		for (let x = 0; x < block.inputList.length; x++) {
 			if (block.inputList[x].type == Blockly.INPUT_VALUE) {
-				let childBlock = block.inputList[x].connection.targetBlock();
+				let childBlock = block.inputList[x].connection?.targetBlock();
 				if (childBlock) {
 					let comment = Arduino.allNestedComments(childBlock);
 					if (comment) {

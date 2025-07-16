@@ -22,3 +22,9 @@ Arduino.forBlock['text'] = (block) => {
 	var code = quote(block.getFieldValue('TEXT'));
 	return [code, Order.ATOMIC];
 };
+
+Arduino.forBlock['text_multiline'] = (block) => {
+	// Text value.
+	var code = quote(block.getFieldValue('TEXT'));
+	return [code, Order.ATOMIC];
+};
