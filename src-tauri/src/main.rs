@@ -1,6 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::{
+    menu::{MenuItem, MenuBuilder, SubmenuBuilder, IconMenuItemBuilder},
+    tray::TrayIconBuilder
+};
+
 #[tauri::command]
 fn upload_code(port: String, code: String) -> Result<String, String> {
     use std::fs::{write};
@@ -32,5 +37,5 @@ fn upload_code(port: String, code: String) -> Result<String, String> {
 
 
 fn main() {
-  app_lib::run();
+    app_lib::run();
 }
