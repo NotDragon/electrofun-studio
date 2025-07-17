@@ -1,0 +1,5 @@
+Copyright (c) 2025 Michalis Chatzittofi.
+
+All rights reserved.
+
+Permission is granted to view this source code for educational or informational purposes only. No permission is granted to modify, distribute, or use this software in any form or for any purpose other than private review. Commercial or derivative use is strictly prohibited without explicit written permission from the copyright holder.
